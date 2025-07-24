@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bright Colorful Calculator</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the calculator */
+        body {
+            font-family: 'Inter', sans-serif; /* Using Inter font as requested */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f06292, #f8bbd0); /* Soft gradient background */
+            margin: 0;
+            padding: 20px; /* Add some padding for smaller screens */
+            box-sizing: border-box;
+        }
+
+        .calculator {
+            background-color: #ffffff; /* White background for the calculator body */
+            border-radius: 20px; /* More rounded corners for the calculator body */
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2); /* Deeper shadow for a floating effect */
+            padding: 25px;
+            max-width: 380px; /* Max width for better control on larger screens */
+            width: 100%; /* Make it fluid */
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            border: 2px solid #e0e0e0; /* Subtle border */
+        }
+
+        .display {
+            background-color: #e0f2f7; /* Light blue background for display */
+            color: #263238; /* Dark text for contrast */
+            padding: 20px;
+            border-radius: 15px; /* Rounded corners for display */
+            text-align: right;
+            font-size: 2.8em; /* Larger font size for display */
+            font-weight: 600;
+            min-height: 80px; /* Ensure display has a minimum height */
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            word-break: break-all; /* Break long numbers */
+            overflow-x: auto; /* Allow horizontal scrolling if numbers are too long */
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1); /* Inner shadow for depth */
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4 columns */
+            gap: 12px; /* Spacing between buttons */
+        }
+
+        .button {
+            background-color: #81d4fa; /* Bright blue for numbers */
+            color: #ffffff; /* White text */
+            padding: 20px;
+            border-radius: 15px; /* Rounded buttons */
+            font-size: 1.8em; /* Larger font size for buttons */
+            font-weight: 700;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out; /* Smooth transitions for hover/active */
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15); /* Button shadow */
+            user-select: none; /* Prevent text selection */
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+        }
+
+        .button:hover {
+            transform: translateY(-3px); /* Lift effect on hover */
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
+        }
+
+        .button:active {
+            transform: translateY(0); /* Press effect on active */
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            background-color: #4fc3f7; /* Slightly darker blue on active */
+        }
+
+        /* Specific button colors */
+        .button.operator {
+            background-color: #ffab91; /* Orange for operators */
+        }
+        .button.operator:hover {
+            background-color: #ff8a65;
+        }
+        .button.operator:active {
+            background-color: #ff7043;
+        }
+
+        .button.clear {
+            background-color: #ef9a9a; /* Red for clear */
+        }
+        .button.clear:hover {
+            background-color: #e57373;
+        }
+        .button.clear:active {
+            background-color: #ef5350;
+        }
+
+        .button.equals {
+            background-color: #aed581; /* Green for equals */
+            grid-column: span 2; /* Make equals button span two columns */
+        }
+        .button.equals:hover {
+            background-color: #9ccc65;
+        }
+        .button.equals:active {
+            background-color: #8bc34a;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .calculator {
+                padding: 15px;
+                border-radius: 15px;
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            }
+            .display {
+                font-size: 2.2em;
+                padding: 15px;
+                min-height: 70px;
+            }
+            .button {
+                font-size: 1.5em;
+                padding: 15px;
+                border-radius: 12px;
+            }
+            .buttons {
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display" id="display">0</div>
+        <div class="buttons">
+            <div class="button clear" data-value="C">C</div>
+            <div class="button operator" data-value="/">/</div>
+            <div class="button operator" data-value="*">*</div>
+            <div class="button operator" data-value="-">-</div>
+
+            <div class="button" data-value="7">7</div>
+            <div class="button" data-value="8">8</div>
+            <div class="button" data-value="9">9</div>
+            <div class="button operator" data-value="+">+</div>
+
+            <div class="button" data-value="4">4</div>
+            <div class="button" data-value="5">5</div>
+            <div class="button" data-value="6">6</div>
+            <div class="button" data-value="1/x" data-type="function">1/x</div> <!-- Added 1/x function -->
+
+            <div class="button" data-value="1">1</div>
+            <div class="button" data-value="2">2</div>
+            <div class="button" data-value="3">3</div>
+            <div class="button" data-value="sqrt" data-type="function">√</div> <!-- Added square root function -->
+
+            <div class="button" data-value="0">0</div>
+            <div class="button" data-value=".">.</div>
+            <div class="button equals" data-value="=">=</div>
+        </div>
+    </div>
+
+    <script>
+        const display = document.getElementById('display');
+        const buttons = document.querySelectorAll('.button');
+
+        let currentInput = '0';
+        let previousInput = '';
+        let operator = null;
+        let resultDisplayed = false; // To handle cases where a new number starts after a result is shown
+
+        // Function to update the display
+        function updateDisplay() {
+            display.textContent = currentInput;
+        }
+
+        // Function to handle number input
+        function handleNumber(num) {
+            if (resultDisplayed) {
+                currentInput = num;
+                resultDisplayed = false;
+            } else if (currentInput === '0' && num !== '.') {
+                currentInput = num;
+            } else {
+                currentInput += num;
+            }
+            updateDisplay();
+        }
+
+        // Function to handle operator input
+        function handleOperator(op) {
+            if (operator && previousInput !== '') {
+                // If an operator is already set and there's a previous input, calculate the intermediate result
+                calculateResult();
+            }
+            previousInput = currentInput;
+            operator = op;
+            currentInput = '0'; // Reset current input for the next number
+            resultDisplayed = false; // Allow new input after operator
+        }
+
+        // Function to handle special functions (1/x, sqrt)
+        function handleFunction(func) {
+            let num = parseFloat(currentInput);
+            if (isNaN(num)) {
+                currentInput = 'Error';
+                updateDisplay();
+                return;
+            }
+
+            if (func === '1/x') {
+                if (num === 0) {
+                    currentInput = 'Error: Div by 0';
+                } else {
+                    currentInput = (1 / num).toString();
+                }
+            } else if (func === 'sqrt') {
+                if (num < 0) {
+                    currentInput = 'Error: Neg Sqrt';
+                } else {
+                    currentInput = Math.sqrt(num).toString();
+                }
+            }
+            resultDisplayed = true; // Mark that a result is displayed
+            updateDisplay();
+            previousInput = ''; // Clear previous input after function calculation
+            operator = null; // Clear operator
+        }
+
+        // Function to calculate the result
+        function calculateResult() {
+            let prev = parseFloat(previousInput);
+            let current = parseFloat(currentInput);
+
+            if (isNaN(prev) || isNaN(current)) {
+                currentInput = 'Error';
+                updateDisplay();
+                return;
+            }
+
+            let result;
+            switch (operator) {
+                case '+':
+                    result = prev + current;
+                    break;
+                case '-':
+                    result = prev - current;
+                    break;
+                case '*':
+                    result = prev * current;
+                    break;
+                case '/':
+                    if (current === 0) {
+                        result = 'Error: Div by 0';
+                    } else {
+                        result = prev / current;
+                    }
+                    break;
+                default:
+                    return; // No operator set
+            }
+
+            // Handle potential errors from division by zero
+            if (typeof result === 'string' && result.startsWith('Error')) {
+                currentInput = result;
+            } else {
+                // Limit decimal places for cleaner display, avoid floating point issues
+                currentInput = parseFloat(result.toFixed(8)).toString();
+            }
+
+            updateDisplay();
+            previousInput = '';
+            operator = null;
+            resultDisplayed = true; // Set flag that a result is displayed
+        }
+
+        // Add event listeners to all buttons
+        buttons.forEach(button => {
+            button.addEventListener('click', () => {
+                const value = button.dataset.value;
+                const type = button.dataset.type; // Get data-type for functions
+
+                if (type === 'function') {
+                    handleFunction(value);
+                } else if (!isNaN(parseFloat(value)) || value === '.') {
+                    handleNumber(value);
+                } else if (['+', '-', '*', '/'].includes(value)) {
+                    handleOperator(value);
+                } else if (value === '=') {
+                    calculateResult();
+                } else if (value === 'C') {
+                    currentInput = '0';
+                    previousInput = '';
+                    operator = null;
+                    resultDisplayed = false;
+                    updateDisplay();
+                }
+            });
+        });
+
+        // Initial display update
+        updateDisplay();
+    </script>
+</body>
+</html>
