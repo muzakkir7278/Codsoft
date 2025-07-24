@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colorful Landing Page</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Initial colorful gradient background - this will be overridden by JS */
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%, black);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column; /* Allow content to stack vertically */
+            justify-content: flex-start; /* Align content to the start for scrolling */
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: background 1s ease-in-out, color 0.5s ease-in-out; /* Smooth transition for background changes */
+        }
+        /* Custom styles for the popup overlay */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 999;
+        }
+        /* Custom styles for the popup content */
+        .modal-content {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); /* Popup gradient */
+            max-width: 500px;
+            width: 90%;
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            animation: fadeInScale 0.3s ease-out forwards;
+        }
+
+        /* Animation for popup appearance */
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Animation for popup disappearance */
+        @keyframes fadeOutScale {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+        }
+
+        .modal-hide {
+            animation: fadeOutScale 0.3s ease-in forwards;
+        }
+
+        /* Spinner for loading state */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Image Popup specific styles */
+        .image-modal-content {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            max-width: 90%;
+            max-height: 90%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .image-modal-content img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        /* Skill Box Styling */
+        .skill-box {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .skill-box:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+        .skill-box span {
+            font-size: 0.9rem;
+            line-height: 1.2;
+        }
+
+        /* Skill Popup specific styles */
+        .skill-modal-content {
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); /* Skill Popup gradient */
+            max-width: 500px;
+            width: 90%;
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            animation: fadeInScale 0.3s ease-out forwards;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            position: relative;
+            text-align: center;
+        }
+
+        /* Theme Toggle Switch Styles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        /* New Modal Styles (for Privacy, Account, Services, Works) */
+        .interactive-modal-content {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); /* A new vibrant gradient */
+            max-width: 600px;
+            width: 90%;
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            animation: fadeInScale 0.3s ease-out forwards;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            position: relative;
+            text-align: center;
+            color: white; /* Ensure text is visible on colorful background */
+        }
+        .interactive-modal-content h3 {
+            color: white;
+        }
+        .interactive-modal-content input[type="text"],
+        .interactive-modal-content input[type="email"],
+        .interactive-modal-content input[type="password"] {
+            background-color: rgba(255, 255, 255, 0.8);
+            color: #333;
+        }
+        .interactive-modal-content input::placeholder {
+            color: #666;
+        }
+        .interactive-modal-content .checkbox-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            last:border-b-0;
+        }
+        /* Custom message box for "Hire Me" */
+        .message-box {
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 300px;
+            margin: 20px auto;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1001;
+            animation: fadeInScale 0.3s ease-out forwards;
+        }
+        .message-box button {
+            margin-top: 15px;
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .message-box button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-start min-h-screen p-5">
+
+    <!-- Header with Navigation -->
+    <header class="w-full max-w-4xl bg-white bg-opacity-90 rounded-lg shadow-xl p-4 mb-8 flex justify-between items-center">
+        <div class="text-2xl font-bold text-gray-800">
+            <!-- "MyPage" now links to the home section -->
+            <a href="#home-section" id="myPageLink" class="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500 cursor-pointer hover:opacity-80 transition-opacity duration-200">MA</a>
+        </div>
+        <nav>
+            <ul class="flex space-x-6">
+                <li><a href="#profile-section-content" class="text-gray-700 hover:text-blue-600 font-semibold transition duration-200">Profile</a></li>
+                <li><a href="#signup-section-content" class="text-gray-700 hover:text-blue-600 font-semibold transition duration-200">Sign Up</a></li>
+                <li><a href="#about-section-content" class="text-gray-700 hover:text-blue-600 font-semibold transition duration-200">About</a></li>
+                <li><a href="#skills-section-content" class="text-gray-700 hover:text-blue-600 font-semibold transition duration-200">Skills</a></li>
+                <li><a href="#services-section-content" class="text-gray-700 hover:text-blue-600 font-semibold transition duration-200">Services</a></li>
+                <li><a href="#experience-section-content" class="text-gray-700 hover:text-blue-600 font-semibold transition duration-200">Experience</a></li>
+                <li><a href="#works-section-content" class="text-gray-700 hover:text-blue-600 font-semibold transition duration-200">Works</a></li>
+                <li><a href="#settings-section-content" class="text-gray-700 hover:text-blue-600 font-semibold transition duration-200">Settings</a></li>
+                <li><a href="#contact-section-content" class="text-gray-700 hover:text-blue-600 font-semibold transition duration-200">Contact</a></li>
+                
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main Landing Page Content (Home Section) -->
+    <section id="home-section" class="text-center p-8 bg-white bg-opacity-90 rounded-lg shadow-xl max-w-2xl w-full flex flex-col items-center">
+        <h1 class="text-5xl font-extrabold text-gray-800 mb-4 leading-tight">
+            Welcome to Our <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">Vibrant World</span>
+        </h1>
+        <p class="text-lg text-gray-600 mb-8">
+            Discover amazing things and explore new possibilities with our exciting platform.
+            <br>
+            <span class="font-semibold text-gray-700">Here are some details about our company:</span>
+            <ul class="list-disc list-inside text-left mx-auto max-w-md mt-4 text-gray-600">
+                <li>Founded in 2023 with a vision for innovation.</li>
+                <li>Dedicated to creating user-friendly and impactful digital solutions.</li>
+                <li>Our team comprises passionate experts in design, development, and AI.</li>
+                <li>Committed to continuous improvement and customer satisfaction.</li>
+            </ul>
+        </p>
+        <button id="openPopupBtn" class="px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-full shadow-lg hover:from-blue-600 hover:to-indigo-700 transform hover:scale-105 transition duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-blue-300">
+            Click Me for a Surprise! ✨
+        </button>
+
+        <!-- Profile Section Content -->
+        <div id="profile-section-content" class="w-full p-8 mt-12 bg-white bg-opacity-90 rounded-lg shadow-xl text-center">
+            <h2 class="text-4xl font-bold text-gray-800 mb-4">Your Profile</h2>
+            <p class="text-gray-600 mb-6"></p>
+            <div id="profileImageContainer" class="w-40 h-40 mx-auto rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center cursor-pointer shadow-lg hover:shadow-xl transform hover:scale-105 transition duration-300 ease-in-out">
+                <img id="profileImage" src="img.jpg" alt="Profile Picture" class="rounded-full border-4 border-white">
+            </div>
+        </div>
+
+        <!-- About Section Content -->
+        <div id="about-section-content" class="w-full p-8 mt-12 bg-red-100 bg-red-90 rounded-lg shadow-xl text-center">
+            <h2 class="text-4xl font-bold text-gray-800 mb-4">About Us</h2>
+            <p style="color: black;" class="text-gray-600">We are a team dedicated to bringing you the best experiences online. Our mission is to innovate and inspire. We believe in the power of technology to connect and empower individuals worldwide.</p>
+        </div>
+
+        <!-- Skills Section Content -->
+        <div id="skills-section-content" class="w-full p-8 mt-12 bg-white bg-opacity-90 rounded-lg shadow-xl text-center">
+            <h2 class="text-4xl font-bold text-gray-800 mb-8">Our Skills</h2>
+            <p class="text-gray-600 mb-10">Click on a skill to learn more about it!</p>
+            <div id="skillsGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 justify-items-center">
+                <!-- Skill boxes will be injected here by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Services Section Trigger -->
+        <div id="services-section-trigger" class="w-full p-8 mt-12 bg-purple-100 bg-opacity-90 rounded-lg shadow-xl text-center cursor-pointer hover:shadow-2xl transition duration-300 ease-in-out">
+            <h2 class="text-4xl font-bold text-gray-800 mb-4">Services</h2>
+            <p class="text-gray-600">Click to see a detailed list of services!</p>
+        </div>
+
+        <!-- Experience Section Content -->
+        <div id="experience-section-content" class="w-full p-8 mt-12 bg-green-100 bg-opacity-90 rounded-lg shadow-xl text-center">
+            <h2 class="text-4xl font-bold text-gray-800 mb-4">Experience</h2>
+            <p class="text-gray-600 mb-6">Years of expertise in delivering successful projects:</p>
+            <div class="text-left mx-auto max-w-md text-gray-700 space-y-4">
+                <div>
+                    <h3 class="font-semibold text-xl">Senior Web Developer <span class="text-gray-500 text-sm">(2020 - Present)</span></h3>
+                    <p class="text-gray-600">Led development of scalable web applications using React, Node.js, and MongoDB.</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-xl">Junior Software Engineer <span class="text-gray-500 text-sm">(2018 - 2020)</span></h3>
+                    <p class="text-gray-600">Contributed to core product features and maintained existing codebases.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Works Section Trigger -->
+        <div id="works-section-trigger" class="w-full p-8 mt-12 bg-yellow-100 bg-opacity-90 rounded-lg shadow-xl text-center cursor-pointer hover:shadow-2xl transition duration-300 ease-in-out">
+            <h2 class="text-4xl font-bold text-gray-800 mb-4">Works</h2>
+            <p class="text-gray-600">Click to view portfolio!</p>
+        </div>
+
+        <!-- Hire Me Section Content -->
+        <div id="hire-me-section-content" class="w-full p-8 mt-12 bg-red-100 bg-opacity-90 rounded-lg shadow-xl text-center">
+            <h2 class="text-4xl font-bold text-gray-800 mb-4">Hire Me!</h2>
+            <p class="text-gray-600 mb-6">Ready to start your next project? Let's connect!</p>
+            <button id="hireMeBtn" class="px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold rounded-full shadow-lg hover:from-pink-600 hover:to-purple-700 transform hover:scale-105 transition duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-pink-300">
+                Send an Inquiry! 🚀
+            </button>
+        </div>
+
+        <!-- Settings Section Content -->
+        <div id="settings-section-content" class="w-full p-8 mt-12 bg-gray-100 bg-opacity-90 rounded-lg shadow-xl text-center">
+            <h2 class="text-4xl font-bold text-gray-800 mb-4">Settings</h2>
+            <p class="text-gray-600 mb-6">Manage your application preferences here.</p>
+            <ul class="list-none text-left mx-auto max-w-md text-gray-700 space-y-4">
+                <li class="flex justify-between items-center py-2 border-b border-gray-300 last:border-b-0">
+                    <span>Theme Selection (Light/Dark Mode)</span>
+                    <label class="switch">
+                        <input type="checkbox" id="themeToggle">
+                        <span class="slider round"></span>
+                    </label>
+                </li>
+                <li class="flex justify-between items-center py-2 border-b border-gray-300 last:border-b-0">
+                    <span>Notification Preferences</span>
+                    <button class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-200">Manage</button>
+                </li>
+                <li class="flex justify-between items-center py-2 border-b border-gray-300 last:border-b-0">
+                    <span>Language Options</span>
+                    <select style="color: black;" class="p-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-400">
+                        <option>English</option>
+                        <option>Spanish</option>
+                        <option>French</option>
+                    </select>
+                </li>
+                <li class="flex justify-between items-center py-2 border-b border-gray-300 last:border-b-0">
+                    <span>Privacy Settings</span>
+                    <button id="openPrivacySettingsBtn" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-200">Configure</button>
+                </li>
+                <li class="flex justify-between items-center py-2">
+                    <span>Account Management</span>
+                    <button id="openAccountManagementBtn" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition duration-200">Edit Account</button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Sign Up Section Content -->
+        <div id="signup-section-content" class="w-full p-8 mt-12 bg-white bg-opacity-90 rounded-lg shadow-xl text-center">
+            <h2 class="text-4xl font-bold text-gray-800 mb-4">Sign Up</h2>
+            <p class="text-gray-600">Join our community today! Fill out the form below to get started and unlock exclusive features.</p>
+            <form class="space-y-4 mt-6">
+                <input type="text" placeholder="Full Name" class="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-200">
+                <input type="email" placeholder="Email Address" class="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-200">
+                <input type="password" placeholder="Password" class="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-200">
+                <button type="submit" class="w-full px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-bold rounded-lg shadow-md hover:from-purple-600 hover:to-pink-700 transform hover:scale-105 transition duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-purple-300">
+                    Create Account
+                </button>
+            </form>
+        </div>
+
+        <!-- Contact Section Content -->
+        <div id="contact-section-content" class="w-full p-8 mt-12 bg-white bg-opacity-90 rounded-lg shadow-xl text-center">
+            <h2 class="text-4xl font-bold text-gray-800 mb-4">Contact Us</h2>
+            <p class="text-gray-600">Have questions? Reach out to us at <a href="mailto:support@example.com" class="text-blue-600 hover:underline">okaymuzakkir@gmail.com</a> or call us at <span class="font-mono">+91-9121445759</span>. We're here to help!</p>
+        </div>
+
+        <!-- All Rights Reserved Section (New) -->
+        <div id="rights-section-content" class="w-full p-4 mt-12 bg-gray-700 bg-opacity-90 rounded-lg shadow-xl text-center text-gray-300">
+            <p>&copy; 2025 MyPage. All Rights Reserved.</p>
+        </div>
+    </section>
+
+
+    <!-- Main Popup Modal Structure (for LLM message) -->
+    <div id="popupModal" class="fixed inset-0 hidden flex items-center justify-center modal-overlay">
+        <div class="modal-content p-8 rounded-lg relative">
+            <button id="closePopupBtn" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-3xl font-bold focus:outline-none">
+                &times;
+            </button>
+            <h2 class="text-4xl font-extrabold text-gray-800 mb-4">
+                🎉 Congratulations! 🎉
+            </h2>
+            <p class="text-lg text-gray-700 mb-6">
+                You've found our special offer! Sign up now and get 20% off your first purchase.
+            </p>
+
+            <!-- LLM Generated Content Section -->
+            <div id="llmContentSection" class="text-center mb-6 p-4 bg-white bg-opacity-70 rounded-lg shadow-inner">
+                <div id="llmSpinner" class="spinner hidden"></div>
+                <p id="llmMessage" class="text-md text-gray-800 italic"></p>
+                <button id="regenerateMessageBtn" class="mt-4 px-4 py-2 bg-gradient-to-r from-purple-400 to-pink-500 text-white font-semibold rounded-full shadow-md hover:from-purple-500 hover:to-pink-600 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-300 hidden">
+                    Regenerate Surprise ✨
+                </button>
+            </div>
+
+            <form class="space-y-4">
+                <input type="email" placeholder="Your Email" class="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-200">
+                <button type="submit" class="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white font-bold rounded-lg shadow-md hover:from-green-600 hover:to-teal-700 transform hover:scale-105 transition duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-green-300">
+                    Claim Your Offer
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Image Popup Modal Structure -->
+    <div id="imagePopupModal" class="fixed inset-0 hidden flex items-center justify-center modal-overlay">
+        <div class="image-modal-content">
+            <button id="closeImagePopupBtn" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-3xl font-bold focus:outline-none">
+                &times;
+            </button>
+            <img id="enlargedProfileImage" src="" alt="Enlarged Profile Picture">
+        </div>
+    </div>
+
+    <!-- Skill Details Popup Modal Structure -->
+    <div id="skillPopupModal" class="fixed inset-0 hidden flex items-center justify-center modal-overlay">
+        <div class="skill-modal-content">
+            <button id="closeSkillPopupBtn" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-3xl font-bold focus:outline-none">
+                &times;
+            </button>
+            <h3 id="skillPopupTitle" class="text-3xl font-extrabold text-gray-800 mb-4"></h3>
+            <p id="skillPopupDescription" class="text-lg text-gray-700"></p>
+        </div>
+    </div>
+
+    <!-- Privacy Settings Popup Modal -->
+    <div id="privacySettingsModal" class="fixed inset-0 hidden flex items-center justify-center modal-overlay">
+        <div class="interactive-modal-content">
+            <button id="closePrivacySettingsBtn" class="absolute top-4 right-4 text-white hover:text-gray-200 text-3xl font-bold focus:outline-none">
+                &times;
+            </button>
+            <h3 class="text-3xl font-extrabold mb-6">Privacy Settings</h3>
+            <div class="space-y-4 text-left">
+                <div class="checkbox-item">
+                    <span>Enable Two-Factor Authentication</span>
+                    <label class="switch">
+                        <input type="checkbox" id="twoFactorAuthToggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="checkbox-item">
+                    <span>Share Analytics Data</span>
+                    <label class="switch">
+                        <input type="checkbox" id="analyticsToggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="checkbox-item">
+                    <span>Personalized Ads</span>
+                    <label class="switch">
+                        <input type="checkbox" id="adsToggle" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="checkbox-item">
+                    <span>Data Retention Period</span>
+                    <select class="p-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-400 text-gray-700">
+                        <option>30 Days</option>
+                        <option>90 Days</option>
+                        <option>1 Year</option>
+                        <option>Forever</option>
+                    </select>
+                </div>
+            </div>
+            <button id="savePrivacySettingsBtn" class="mt-8 px-6 py-3 bg-white text-purple-600 font-bold rounded-lg shadow-md hover:bg-gray-200 transition duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-white">
+                Save Privacy Settings
+            </button>
+        </div>
+    </div>
+
+    <!-- Account Management Popup Modal -->
+    <div id="accountManagementModal" class="fixed inset-0 hidden flex items-center justify-center modal-overlay">
+        <div class="interactive-modal-content">
+            <button id="closeAccountManagementBtn" class="absolute top-4 right-4 text-white hover:text-gray-200 text-3xl font-bold focus:outline-none">
+                &times;
+            </button>
+            <h3 class="text-3xl font-extrabold mb-6">Account Management</h3>
+            <form class="space-y-4 text-left">
+                <div>
+                    <label for="usernameInput" class="block text-white text-sm font-bold mb-2">Username:</label>
+                    <input type="text" id="usernameInput" placeholder="Your Username" class="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-200">
+                </div>
+                <div>
+                    <label for="emailInput" class="block text-white text-sm font-bold mb-2">Email:</label>
+                    <input type="email" id="emailInput" placeholder="Your Email" class="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-200">
+                </div>
+                <div>
+                    <label for="passwordInput" class="block text-white text-sm font-bold mb-2">New Password:</label>
+                    <input type="password" id="passwordInput" placeholder="New Password" class="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-200">
+                </div>
+                <button id="saveAccountChangesBtn" type="submit" class="w-full px-6 py-3 bg-white text-red-600 font-bold rounded-lg shadow-md hover:bg-gray-200 transition duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-white">
+                    Save Changes
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Services Details Popup Modal -->
+    <div id="servicesDetailsModal" class="fixed inset-0 hidden flex items-center justify-center modal-overlay">
+        <div class="interactive-modal-content">
+            <button id="closeServicesDetailsBtn" class="absolute top-4 right-4 text-white hover:text-gray-200 text-3xl font-bold focus:outline-none">
+                &times;
+            </button>
+            <h3 class="text-3xl font-extrabold mb-6">Our Detailed Services</h3>
+            <ul class="list-disc list-inside text-left mx-auto max-w-md text-white space-y-3">
+                <li><span class="font-bold">Web Design & Development:</span> From stunning UIs to robust backend systems, we build responsive and high-performance websites.</li>
+                <li><span class="font-bold">Mobile App Development:</span> Native and cross-platform mobile applications for iOS and Android, ensuring seamless user experiences.</li>
+                <li><span class="font-bold">Cloud Solutions & DevOps:</span> Scalable cloud infrastructure, continuous integration/delivery pipelines, and efficient deployment strategies.</li>
+                <li><span class="font-bold">AI & Machine Learning Integration:</span> Incorporating intelligent algorithms for data analysis, predictive modeling, and automation.</li>
+                <li><span class="font-bold">Digital Marketing & SEO:</span> Enhancing online visibility, driving traffic, and optimizing conversions through comprehensive digital strategies.</li>
+                <li><span class="font-bold">UI/UX Design:</span> Crafting intuitive and engaging user interfaces that delight users and achieve business goals.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Works Details Popup Modal -->
+    <div id="worksDetailsModal" class="fixed inset-0 hidden flex items-center justify-center modal-overlay">
+        <div class="interactive-modal-content">
+            <button id="closeWorksDetailsBtn" class="absolute top-4 right-4 text-white hover:text-gray-200 text-3xl font-bold focus:outline-none">
+                &times;
+            </button>
+            <h3 class="text-3xl font-extrabold mb-6">Our Portfolio</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                <div class="bg-white p-4 rounded-lg shadow-md text-gray-800">
+                    <img src="https://placehold.co/250x150/E0BBE4/333333?text=E-commerce+Platform" alt="E-commerce Platform" class="rounded-md mb-2 w-full">
+                    <h4 class="font-bold text-xl mb-1">E-commerce Platform</h4>
+                    <p class="text-gray-600 text-sm">Developed a full-stack e-commerce solution with secure payment gateways and inventory management. Features include user authentication, product catalog, shopping cart, and order processing.</p>
+                    <a href="#" class="text-blue-600 hover:underline text-sm mt-2 block">View Case Study</a>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-md text-gray-800">
+                    <img src="https://placehold.co/250x150/957DAD/333333?text=Fitness+App" alt="Mobile Fitness App" class="rounded-md mb-2 w-full">
+                    <h4 class="font-bold text-xl mb-1">Mobile Fitness App</h4>
+                    <p class="text-gray-600 text-sm">Designed and built a cross-platform mobile application for fitness tracking, including workout routines, calorie tracking, and progress visualization. Available on iOS and Android.</p>
+                    <a href="#" class="text-blue-600 hover:underline text-sm mt-2 block">View on App Store</a>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-md text-gray-800">
+                    <img src="https://placehold.co/250x150/FFC72C/333333?text=CRM+System" alt="Custom CRM System" class="rounded-md mb-2 w-full">
+                    <h4 class="font-bold text-xl mb-1">Custom CRM System</h4>
+                    <p class="text-gray-600 text-sm">A tailor-made Customer Relationship Management system to streamline sales processes, manage client interactions, and generate detailed reports for a B2B client.</p>
+                    <a href="#" class="text-blue-600 hover:underline text-sm mt-2 block">Read More</a>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-md text-gray-800">
+                    <img src="https://placehold.co/250x150/A7D9B4/333333?text=Data+Dashboard" alt="Interactive Data Dashboard" class="rounded-md mb-2 w-full">
+                    <h4 class="font-bold text-xl mb-1">Interactive Data Dashboard</h4>
+                    <p class="text-gray-600 text-sm">Developed a real-time data visualization dashboard for business intelligence, allowing users to monitor key performance indicators with interactive charts and graphs.</p>
+                    <a href="#" class="text-blue-600 hover:underline text-sm mt-2 block">Explore Demo</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Custom Message Box (for Hire Me button) -->
+    <div id="customMessageBox" class="message-box hidden">
+        <p id="messageBoxText">Thank you for your inquiry! We'll get back to you soon.</p>
+        <button id="closeMessageBoxBtn">OK</button>
+    </div>
+
+
+    <script>
+        // Get references to the elements
+        const openPopupBtn = document.getElementById('openPopupBtn');
+        const popupModal = document.getElementById('popupModal');
+        const closePopupBtn = document.getElementById('closePopupBtn');
+        const modalContent = popupModal.querySelector('.modal-content');
+        const llmSpinner = document.getElementById('llmSpinner');
+        const llmMessage = document.getElementById('llmMessage');
+        const regenerateMessageBtn = document.getElementById('regenerateMessageBtn');
+        const myPageLink = document.getElementById('myPageLink'); // Reference to the MyPage link
+
+        // Image popup elements
+        const profileImageContainer = document.getElementById('profileImageContainer');
+        const profileImage = document.getElementById('profileImage');
+        const imagePopupModal = document.getElementById('imagePopupModal');
+        const closeImagePopupBtn = document.getElementById('closeImagePopupBtn');
+        const enlargedProfileImage = document.getElementById('enlargedProfileImage');
+
+        // Skill popup elements
+        const skillsGrid = document.getElementById('skillsGrid');
+        const skillPopupModal = document.getElementById('skillPopupModal');
+        const closeSkillPopupBtn = document.getElementById('closeSkillPopupBtn');
+        const skillPopupTitle = document.getElementById('skillPopupTitle');
+        const skillPopupDescription = document.getElementById('skillPopupDescription');
+
+        // Settings elements
+        const themeToggle = document.getElementById('themeToggle'); // Theme toggle switch
+        const openPrivacySettingsBtn = document.getElementById('openPrivacySettingsBtn'); // New
+        const privacySettingsModal = document.getElementById('privacySettingsModal'); // New
+        const closePrivacySettingsBtn = document.getElementById('closePrivacySettingsBtn'); // New
+        const savePrivacySettingsBtn = document.getElementById('savePrivacySettingsBtn'); // New
+
+        const openAccountManagementBtn = document.getElementById('openAccountManagementBtn'); // New
+        const accountManagementModal = document.getElementById('accountManagementModal'); // New
+        const closeAccountManagementBtn = document.getElementById('closeAccountManagementBtn'); // New
+        const saveAccountChangesBtn = document.getElementById('saveAccountChangesBtn'); // New
+
+        // Services elements
+        const servicesSectionTrigger = document.getElementById('services-section-trigger'); // New
+        const servicesDetailsModal = document.getElementById('servicesDetailsModal'); // New
+        const closeServicesDetailsBtn = document.getElementById('closeServicesDetailsBtn'); // New
+
+        // Works elements
+        const worksSectionTrigger = document.getElementById('works-section-trigger'); // New
+        const worksDetailsModal = document.getElementById('worksDetailsModal'); // New
+        const closeWorksDetailsBtn = document.getElementById('closeWorksDetailsBtn'); // New
+
+
+        // Hire Me elements
+        const hireMeBtn = document.getElementById('hireMeBtn'); // New
+        const customMessageBox = document.getElementById('customMessageBox'); // New
+        const messageBoxText = document.getElementById('messageBoxText'); // New
+        const closeMessageBoxBtn = document.getElementById('closeMessageBoxBtn'); // New
+
+
+        // Data for skills
+        const skillsData = [
+            { name: 'HTML', description: 'Proficient in structuring robust and semantic web content using HTML5, ensuring accessibility and cross-browser compatibility.', color: 'bg-gradient-to-r from-red-500 to-orange-500' },
+            { name: 'CSS', description: 'Expert in crafting beautiful, responsive, and maintainable designs with CSS3, including advanced layout techniques like Flexbox and Grid, and animations.', color: 'bg-gradient-to-r from-blue-500 to-cyan-500' },
+            { name: 'JavaScript', description: 'Strong command of JavaScript for dynamic and interactive web experiences, including DOM manipulation, event handling, and asynchronous programming.', color: 'bg-gradient-to-r from-yellow-500 to-amber-500' },
+            { name: 'Python', description: 'Skilled in Python for backend development, data analysis, scripting, and leveraging libraries for machine learning and automation.', color: 'bg-gradient-to-r from-green-500 to-lime-500' },
+            { name: 'Java', description: 'Experienced in Java for building scalable enterprise-level applications, Android development, and object-oriented programming principles.', color: 'bg-gradient-to-r from-purple-500 to-indigo-500' },
+            { name: 'C', description: 'Fundamental understanding of C for high-performance computing, system-level programming, and embedded systems development.', color: 'bg-gradient-to-r from-gray-600 to-gray-800' }
+        ];
+
+        // Function to open the main popup (LLM message)
+        function openPopup() {
+            popupModal.classList.remove('hidden');
+            modalContent.classList.remove('modal-hide');
+            setTimeout(() => {
+                modalContent.style.opacity = '1';
+                modalContent.style.transform = 'scale(1)';
+                generateSurpriseMessage();
+            }, 10);
+        }
+
+        // Function to close the main popup with animation
+        function closePopup() {
+            modalContent.classList.add('modal-hide');
+            modalContent.addEventListener('animationend', function handler() {
+                popupModal.classList.add('hidden');
+                modalContent.classList.remove('modal-hide');
+                modalContent.removeEventListener('animationend', handler);
+                llmMessage.textContent = '';
+                regenerateMessageBtn.classList.add('hidden');
+            }, { once: true });
+        }
+
+        // Function to generate a surprise message using Gemini API
+        async function generateSurpriseMessage() {
+            llmSpinner.classList.remove('hidden');
+            llmMessage.textContent = '';
+            regenerateMessageBtn.classList.add('hidden');
+
+            const prompt = "Generate a short, positive, and surprising message for a user who just clicked a 'surprise me' button on a colorful landing page. Make it encouraging and delightful, perhaps hinting at new possibilities or a special, non-monetary 'gift' like inspiration or joy. Keep it under 50 words.";
+
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiKey = ""; // Canvas will provide this at runtime
+
+            try {
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    llmMessage.textContent = text;
+                } else {
+                    llmMessage.textContent = "Oops! Couldn't generate a surprise right now. Try again!";
+                    console.error("Gemini API response structure unexpected:", result);
+                }
+            } catch (error) {
+                llmMessage.textContent = "Failed to fetch surprise. Please check your connection.";
+                console.error("Error calling Gemini API:", error);
+            } finally {
+                llmSpinner.classList.add('hidden');
+                regenerateMessageBtn.classList.remove('hidden');
+            }
+        }
+
+        // Function to show a specific section and hide others
+        function showSection(targetId) {
+            // Ensure the main home-section is always visible
+            document.getElementById('home-section').classList.remove('hidden');
+
+            // Close any open popups
+            if (!popupModal.classList.contains('hidden')) {
+                closePopup();
+            }
+            if (!imagePopupModal.classList.contains('hidden')) {
+                closeImagePopup();
+            }
+            if (!skillPopupModal.classList.contains('hidden')) {
+                closeSkillPopup();
+            }
+            if (!privacySettingsModal.classList.contains('hidden')) {
+                closePrivacySettingsPopup();
+            }
+            if (!accountManagementModal.classList.contains('hidden')) {
+                closeAccountManagementPopup();
+            }
+            if (!servicesDetailsModal.classList.contains('hidden')) {
+                closeServicesDetailsPopup();
+            }
+            if (!worksDetailsModal.classList.contains('hidden')) {
+                closeWorksDetailsPopup();
+            }
+            if (!customMessageBox.classList.contains('hidden')) {
+                closeMessageBox();
+            }
+
+
+            // Scroll to the target element within the home-section
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start' // Scroll to the top of the element
+                });
+            }
+        }
+
+        // Function to open the image popup
+        function openImagePopup() {
+            enlargedProfileImage.src = profileImage.src;
+            imagePopupModal.classList.remove('hidden');
+        }
+
+        // Function to close the image popup
+        function closeImagePopup() {
+            imagePopupModal.classList.add('hidden');
+        }
+
+        // Function to open the skill popup
+        function openSkillPopup(skillName, skillDescription) {
+            skillPopupTitle.textContent = skillName;
+            skillPopupDescription.textContent = skillDescription;
+            skillPopupModal.classList.remove('hidden');
+        }
+
+        // Function to close the skill popup
+        function closeSkillPopup() {
+            skillPopupModal.classList.add('hidden');
+        }
+
+        // Function to dynamically create skill boxes
+        function createSkillBoxes() {
+            skillsData.forEach(skill => {
+                const skillBox = document.createElement('div');
+                skillBox.className = `skill-box ${skill.color} flex flex-col justify-center items-center p-2 text-white text-sm cursor-pointer`;
+                skillBox.innerHTML = `<span>${skill.name}</span>`;
+                skillBox.addEventListener('click', () => openSkillPopup(skill.name, skill.description));
+                skillsGrid.appendChild(skillBox);
+            });
+        }
+
+        // Functions for Privacy Settings Popup
+        function openPrivacySettingsPopup() {
+            privacySettingsModal.classList.remove('hidden');
+        }
+
+        function closePrivacySettingsPopup() {
+            privacySettingsModal.classList.add('hidden');
+        }
+
+        // Functions for Account Management Popup
+        function openAccountManagementPopup() {
+            accountManagementModal.classList.remove('hidden');
+        }
+
+        function closeAccountManagementPopup() {
+            accountManagementModal.classList.add('hidden');
+        }
+
+        // Functions for Services Details Popup
+        function openServicesDetailsPopup() {
+            servicesDetailsModal.classList.remove('hidden');
+        }
+
+        function closeServicesDetailsPopup() {
+            servicesDetailsModal.classList.add('hidden');
+        }
+
+        // Functions for Works Details Popup
+        function openWorksDetailsPopup() {
+            worksDetailsModal.classList.remove('hidden');
+        }
+
+        function closeWorksDetailsPopup() {
+            worksDetailsModal.classList.add('hidden');
+        }
+
+        // Functions for Custom Message Box
+        function showMessageBox(message) {
+            messageBoxText.textContent = message;
+            customMessageBox.classList.remove('hidden');
+        }
+
+        function closeMessageBox() {
+            customMessageBox.classList.add('hidden');
+        }
+
+        // --- Theme Toggle Logic ---
+        const lightModeGradients = [
+            'linear-gradient(135deg, #f6d365 0%, #fda085 100%)', // Original
+            'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)', // Blue
+            'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)', // Red
+            'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)', // Green
+            'linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)', // Pink-Purple
+            'linear-gradient(135deg, #fddb92 0%, #d1fdff 100%)'  // Yellow-Teal
+        ];
+        const darkModeGradient = 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)'; // Dark gradient
+        const darkTextClass = 'text-gray-200';
+        const lightTextClass = 'text-gray-800';
+
+        let currentGradientIndex = 0;
+        let isDarkMode = false;
+        let backgroundInterval;
+
+        function applyTheme() {
+            const body = document.body;
+            const header = document.querySelector('header');
+            const mainSection = document.getElementById('home-section');
+            const allContentDivs = document.querySelectorAll('#home-section > div'); // All direct children divs in home-section
+
+            if (isDarkMode) {
+                // Apply dark mode styles
+                body.style.background = darkModeGradient;
+                body.classList.remove(lightTextClass);
+                body.classList.add(darkTextClass);
+                header.classList.remove('bg-white', 'bg-opacity-90', 'text-gray-800');
+                header.classList.add('bg-gray-800', 'bg-opacity-90', 'text-gray-200');
+                mainSection.classList.remove('bg-white', 'bg-opacity-90');
+                mainSection.classList.add('bg-gray-900', 'bg-opacity-90', 'text-gray-200');
+
+                allContentDivs.forEach(div => {
+                    if (div.id !== 'about-section-content' && div.id !== 'services-section-trigger' && div.id !== 'experience-section-content' && div.id !== 'works-section-trigger' && div.id !== 'hire-me-section-content' && div.id !== 'settings-section-content' && div.id !== 'rights-section-content') { // Keep specific backgrounds
+                        div.classList.remove('bg-white', 'bg-opacity-90');
+                        div.classList.add('bg-gray-800', 'bg-opacity-90', 'text-gray-200');
+                    } else if (div.id === 'services-section-trigger') {
+                        div.classList.remove('bg-purple-100');
+                        div.classList.add('bg-purple-900');
+                    } else if (div.id === 'experience-section-content') {
+                        div.classList.remove('bg-green-100');
+                        div.classList.add('bg-green-900');
+                    } else if (div.id === 'works-section-trigger') {
+                        div.classList.remove('bg-yellow-100');
+                        div.classList.add('bg-yellow-900');
+                    } else if (div.id === 'hire-me-section-content') {
+                        div.classList.remove('bg-red-100');
+                        div.classList.add('bg-red-900');
+                    } else if (div.id === 'settings-section-content') {
+                        div.classList.remove('bg-gray-100');
+                        div.classList.add('bg-gray-700');
+                    } else if (div.id === 'rights-section-content') {
+                        div.classList.remove('bg-gray-700');
+                        div.classList.add('bg-gray-900');
+                    }
+
+                    div.querySelectorAll('h2, p, a, input, button, select, span').forEach(el => {
+                        if (!el.classList.contains('text-transparent') && !el.classList.contains('text-white')) { // Don't override gradient text or white buttons
+                            el.classList.remove('text-gray-600', 'text-gray-700', 'text-gray-800');
+                            el.classList.add('text-gray-200');
+                        }
+                    });
+                });
+                // Stop the automatic background cycling in dark mode
+                clearInterval(backgroundInterval);
+
+            } else {
+                // Apply light mode styles
+                body.classList.remove(darkTextClass);
+                body.classList.add(lightTextClass);
+                header.classList.remove('bg-gray-800', 'bg-opacity-90', 'text-gray-200');
+                header.classList.add('bg-white', 'bg-opacity-90', 'text-gray-800');
+                mainSection.classList.remove('bg-gray-900', 'bg-opacity-90', 'text-gray-200');
+                mainSection.classList.add('bg-white', 'bg-opacity-90', 'text-gray-800');
+
+                allContentDivs.forEach(div => {
+                    if (div.id !== 'about-section-content' && div.id !== 'services-section-trigger' && div.id !== 'experience-section-content' && div.id !== 'works-section-trigger' && div.id !== 'hire-me-section-content' && div.id !== 'settings-section-content' && div.id !== 'rights-section-content') {
+                        div.classList.remove('bg-gray-800', 'bg-opacity-90', 'text-gray-200');
+                        div.classList.add('bg-white', 'bg-opacity-90');
+                    } else if (div.id === 'services-section-trigger') {
+                        div.classList.remove('bg-purple-900');
+                        div.classList.add('bg-purple-100');
+                    } else if (div.id === 'experience-section-content') {
+                        div.classList.remove('bg-green-900');
+                        div.classList.add('bg-green-100');
+                    } else if (div.id === 'works-section-trigger') {
+                        div.classList.remove('bg-yellow-900');
+                        div.classList.add('bg-yellow-100');
+                    } else if (div.id === 'hire-me-section-content') {
+                        div.classList.remove('bg-red-900');
+                        div.classList.add('bg-red-100');
+                    } else if (div.id === 'settings-section-content') {
+                        div.classList.remove('bg-gray-700');
+                        div.classList.add('bg-gray-100');
+                    } else if (div.id === 'rights-section-content') {
+                        div.classList.remove('bg-gray-900');
+                        div.classList.add('bg-gray-700');
+                    }
+                    div.querySelectorAll('h2, p, a, input, button, select, span').forEach(el => {
+                         if (!el.classList.contains('text-transparent') && !el.classList.contains('text-white')) {
+                            el.classList.remove('text-gray-200');
+                            el.classList.add('text-gray-600', 'text-gray-700', 'text-gray-800');
+                        }
+                    });
+                });
+                // Restart automatic background cycling
+                changeBackgroundGradient(); // Set initial gradient
+                backgroundInterval = setInterval(changeBackgroundGradient, 5000);
+            }
+        }
+
+        function changeBackgroundGradient() {
+            if (!isDarkMode) { // Only cycle gradients in light mode
+                currentGradientIndex = (currentGradientIndex + 1) % lightModeGradients.length;
+                document.body.style.background = lightModeGradients[currentGradientIndex];
+            }
+        }
+
+        // Event listeners for main popup
+        openPopupBtn.addEventListener('click', openPopup);
+        closePopupBtn.addEventListener('click', closePopup);
+        regenerateMessageBtn.addEventListener('click', generateSurpriseMessage);
+        popupModal.addEventListener('click', (event) => {
+            if (event.target === popupModal) {
+                closePopup();
+            }
+        });
+
+        // Event listener for "MyPage" link (now scrolls to the top of the consolidated home-section)
+        myPageLink.addEventListener('click', function (e) {
+            e.preventDefault();
+            showSection('home-section'); // Scroll to the very top of the consolidated section
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // Ensure page scrolls to top
+        });
+
+        // Event listeners for navigation links (now scroll to internal divs within home-section)
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1); // Get target ID without '#'
+                showSection(targetId); // Scroll to the specific content div
+            });
+        });
+
+        // Event listeners for image popup
+        profileImageContainer.addEventListener('click', openImagePopup);
+        closeImagePopupBtn.addEventListener('click', closeImagePopup);
+        imagePopupModal.addEventListener('click', (event) => {
+            if (event.target === imagePopupModal) {
+                closeImagePopup();
+            }
+        });
+
+        // Event listeners for skill popup
+        closeSkillPopupBtn.addEventListener('click', closeSkillPopup);
+        skillPopupModal.addEventListener('click', (event) => {
+            if (event.target === skillPopupModal) {
+                closeSkillPopup();
+            }
+        });
+
+        // Theme toggle event listener
+        themeToggle.addEventListener('change', () => {
+            isDarkMode = themeToggle.checked;
+            applyTheme();
+        });
+
+        // Event listeners for Privacy Settings popup
+        openPrivacySettingsBtn.addEventListener('click', openPrivacySettingsPopup);
+        closePrivacySettingsBtn.addEventListener('click', closePrivacySettingsPopup);
+        privacySettingsModal.addEventListener('click', (event) => {
+            if (event.target === privacySettingsModal) {
+                closePrivacySettingsPopup();
+            }
+        });
+        savePrivacySettingsBtn.addEventListener('click', () => {
+            // In a real app, you'd save these settings to a backend or local storage
+            console.log('Privacy settings saved!');
+            console.log('Two-Factor Auth:', document.getElementById('twoFactorAuthToggle').checked);
+            console.log('Analytics Data Sharing:', document.getElementById('analyticsToggle').checked);
+            console.log('Personalized Ads:', document.getElementById('adsToggle').checked);
+            console.log('Data Retention:', document.querySelector('#privacySettingsModal select').value);
+            closePrivacySettingsPopup();
+        });
+
+        // Event listeners for Account Management popup
+        openAccountManagementBtn.addEventListener('click', openAccountManagementPopup);
+        closeAccountManagementBtn.addEventListener('click', closeAccountManagementPopup);
+        accountManagementModal.addEventListener('click', (event) => {
+            if (event.target === accountManagementModal) {
+                closeAccountManagementPopup();
+            }
+        });
+        saveAccountChangesBtn.addEventListener('click', (event) => {
+            event.preventDefault(); // Prevent form submission for this demo
+            // In a real app, you'd send these updates to a backend
+            console.log('Account changes saved!');
+            console.log('Username:', document.getElementById('usernameInput').value);
+            console.log('Email:', document.getElementById('emailInput').value);
+            console.log('New Password (if changed):', document.getElementById('passwordInput').value);
+            closeAccountManagementPopup();
+        });
+
+        // Event listeners for Services Details popup
+        servicesSectionTrigger.addEventListener('click', openServicesDetailsPopup);
+        closeServicesDetailsBtn.addEventListener('click', closeServicesDetailsPopup);
+        servicesDetailsModal.addEventListener('click', (event) => {
+            if (event.target === servicesDetailsModal) {
+                closeServicesDetailsPopup();
+            }
+        });
+
+        // Event listeners for Works Details popup
+        worksSectionTrigger.addEventListener('click', openWorksDetailsPopup);
+        closeWorksDetailsBtn.addEventListener('click', closeWorksDetailsPopup);
+        worksDetailsModal.addEventListener('click', (event) => {
+            if (event.target === worksDetailsModal) {
+                closeWorksDetailsPopup();
+            }
+        });
+
+
+        // Event listener for Hire Me button
+        hireMeBtn.addEventListener('click', () => {
+            showMessageBox("Your inquiry has been sent successfully! We'll be in touch.");
+        });
+
+        // Event listener for closing custom message box
+        closeMessageBoxBtn.addEventListener('click', closeMessageBox);
+        customMessageBox.addEventListener('click', (event) => {
+            if (event.target === customMessageBox) {
+                closeMessageBox();
+            }
+        });
+
+
+        // Set initial section to home-section on page load and create skill boxes
+        document.addEventListener('DOMContentLoaded', () => {
+            showSection('home-section');
+            createSkillBoxes(); // Call to create skill boxes on load
+            applyTheme(); // Apply initial theme (light mode by default)
+        });
+
+        // Start background color changing for light mode initially
+        backgroundInterval = setInterval(changeBackgroundGradient, 5000);
+    </script>
+</body>
+</html>
